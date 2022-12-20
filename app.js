@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express'); 
 const line = require('@line/bot-sdk');  
 const crypto = require('crypto');
+const ExerciseUtil = require("./util/exercise")
 const app = express(); 
 
 const config = {
@@ -42,17 +43,17 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 
 });
 
-function handleEvent(event) {
+async function handleEvent(event) {
     if (event.type !== 'message' || event.message.type !== 'text') {
         // ignore non-text-message event
         return Promise.resolve(null);
     }
         
     const exerciesEnum = Object.freeze({
-        "jump": 1,
-        "bike": 2,
-        "weightlifting": 3,
-        "jogging": 4
+        "JUMP": 1,
+        "BIKE": 2,
+        "WEIGHTLIFTING": 3,
+        "JOGGING": 4
     });
     
     const reply = {
@@ -70,29 +71,79 @@ function handleEvent(event) {
         return client.replyMessage(event.replyToken, reply);
     }    
     
+    /*
+        呼叫python程式，帶入使用者輸入的運動類別以及運動時間
+    */
     switch(exerciseType){
         case "跳躍":
-            console.log(exerciseType, exerciesEnum.jump, `運動${duration}分鐘`);
+            ExerciseUtil.execute(exerciesEnum.JUMP, duration)
+                        .then(async () => {
+                            await ExerciseUtil.sleep(duration);
+                            reply.text = `您此次運動了${duration}分鐘! 請點此觀看您此次的運動數據: https://www.google.com.tw/?hl=zh_TW`;
+
+                            console.log(exerciseType, exerciesEnum.JUMP, `運動${duration}分鐘`)
+                            return client.replyMessage(event.replyToken, reply);
+                        })
+                        .catch((err) => {
+                            console.log(`發生錯誤: ${err}`);
+                            reply.text = "發生錯誤";
+                            return client.replyMessage(event.replyToken, reply);
+                        });            
             break;
         case "腳踏車":
-            console.log(exerciseType, exerciesEnum.bike, `運動${duration}分鐘`);
+            ExerciseUtil.execute(exerciesEnum.BIKE, duration)
+                        .then(async () => {
+                            await ExerciseUtil.sleep(duration);
+                            reply.text = `您此次運動了${duration}分鐘! 請點此觀看您此次的運動數據: https://www.google.com.tw/?hl=zh_TW`;
+
+                            console.log(exerciseType, exerciesEnum.BIKE, `運動${duration}分鐘`)
+                            return client.replyMessage(event.replyToken, reply);
+                        })
+                        .catch((err) => {
+                            console.log(`發生錯誤: ${err}`);
+                            reply.text = "發生錯誤";
+                            return client.replyMessage(event.replyToken, reply);
+                        });
             break;
         case "健身":
-            console.log(exerciseType, exerciesEnum.weightlifting, `運動${duration}分鐘`);
+            ExerciseUtil.execute(exerciesEnum.WEIGHTLIFTING, duration)
+                        .then(async () => {
+                            await ExerciseUtil.sleep(duration);
+                            reply.text = `您此次運動了${duration}分鐘! 請點此觀看您此次的運動數據: https://www.google.com.tw/?hl=zh_TW`;
+
+                            console.log(exerciseType, exerciesEnum.WEIGHTLIFTING, `運動${duration}分鐘`)
+                            return client.replyMessage(event.replyToken, reply);
+                        })
+                        .catch((err) => {
+                            console.log(`發生錯誤: ${err}`);
+                            reply.text = "發生錯誤";
+                            return client.replyMessage(event.replyToken, reply);
+                        });
             break;
         case "跑步":
-            console.log(exerciseType, exerciesEnum.jogging, `運動${duration}分鐘`);
+            ExerciseUtil.execute(exerciesEnum.JOGGING, duration)
+                        .then(async () => {
+                            await ExerciseUtil.sleep(duration);
+                            reply.text = `您此次運動了${duration}分鐘! 請點此觀看您此次的運動數據: https://www.google.com.tw/?hl=zh_TW`;
+
+                            console.log(exerciseType, exerciesEnum.JOGGING, `運動${duration}分鐘`)
+                            return client.replyMessage(event.replyToken, reply);
+                        })
+                        .catch((err) => {
+                            console.log(`發生錯誤: ${err}`);
+                            reply.text = "發生錯誤";
+                            return client.replyMessage(event.replyToken, reply);
+                        });
             break;
         case "運動":
         case "使用方式":
-            break;
+            return;            
         default:
             reply.text = "格式錯誤，請重新輸入!";
             return client.replyMessage(event.replyToken, reply);            
     }
     
-      // use reply API
-    //   return client.replyMessage(event.replyToken, reply);
+    
 }
 
 function isValidInput(messages, exerciseType, duration){    
